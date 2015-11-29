@@ -10,7 +10,10 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import java.util.Random;
+import java.util.Stack;
+
 import android.view.View.OnClickListener;
+import android.widget.TextView;
 
 public class home extends AppCompatActivity {
 
@@ -20,11 +23,15 @@ public class home extends AppCompatActivity {
     private ImageButton _imgB2;
     private ImageButton _imgB3;
     private Button _startGame;
+    private Button _submit;
     private Drawable draw;
     private Random random;
     private Drawable [] drawables = null;
     private _Item [] _recipes = null;
-    private _Item []  _berserkerRecipe = null;
+    private _Item [] _berserkerRecipe = null;
+    private Stack<_Item> _userRecipe = new Stack<_Item>();
+    private boolean _gameStarted = false;
+    private TextView _info;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +62,12 @@ public class home extends AppCompatActivity {
         _imgB2 = (ImageButton) findViewById(R.id.imgButton2);
         _imgB3 = (ImageButton) findViewById(R.id.imgButton3);
         _startGame = (Button) findViewById(R.id.start_game);
+        _submit = (Button) findViewById(R.id.submitButton);
         _recipeView = (ImageView) findViewById(R.id.recipe);
+        _info = (TextView) findViewById(R.id.info);
+
+        _submit.setVisibility(View.GONE);
+
 
         //on button click set image button to random image in the array
         _imgB1.setOnClickListener(new View.OnClickListener()
@@ -63,7 +75,22 @@ public class home extends AppCompatActivity {
             @Override
             public void onClick(View view)
             {
+                if(_gameStarted)
+                {
+                    _userRecipe.push(_berserkerRecipe[0]);
+                }
+            }
+        });
 
+        _imgB2.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if(_gameStarted)
+                {
+                    _userRecipe.push(_berserkerRecipe[1]);
+                }
             }
         });
 
@@ -73,13 +100,34 @@ public class home extends AppCompatActivity {
             public void onClick(View view)
             {
                 _startGame.setVisibility(View.GONE);
+                _submit.setVisibility(view.VISIBLE);
 
                 random = new Random();
                 int rand = random.nextInt(_recipes.length);
-                draw = _recipes[rand].get_image();
+                //draw = _recipes[rand].get_image();
+                draw = _recipes[0].get_image(); //force a testing for berserker recipe
                 _recipeView.setImageDrawable(draw);
 
+                _imgB1.setImageDrawable(_berserkerRecipe[0].get_image());
+                _imgB2.setImageDrawable(_berserkerRecipe[1].get_image());
 
+                _gameStarted = true;
+            }
+        });
+
+        _submit.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                _Item [] check = new _Item[]
+                        {
+                                new _Item(_userRecipe.pop()),
+                                new _Item(_userRecipe.pop())
+                        };
+
+                if(_recipes[0]._checkRecipe(check) == true)
+                    _info.setText("Win!");
             }
         });
     }
